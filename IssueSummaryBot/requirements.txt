@@ -1,0 +1,5 @@
+PyGithub>=2.1.1
+openai>=1.6.1
+langchain>=0.1.0
+langchain-openai>=0.0.2
+python-dotenv>=1.0.0

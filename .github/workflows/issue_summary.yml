@@ -1,0 +1,38 @@
+name: Issue Summary Bot
+
+on:
+  # schedule:
+    # Run every day at 9 AM UTC
+    # - cron: '0 9 * * *'
+  workflow_dispatch:  # Allow manual triggering
+  # issues:
+    # types: [opened, labeled, closed, reopened]
+
+jobs:
+  summarize-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r IssueSummaryBot/requirements.txt
+      
+      - name: Run Issue Summary Bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          python IssueSummaryBot/issue_summary_bot.py

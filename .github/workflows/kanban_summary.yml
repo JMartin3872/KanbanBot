@@ -1,0 +1,46 @@
+name: Kanban Summary Bot
+
+on:
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      project_name:
+        description: 'Name of the GitHub Project'
+        required: false
+        default: 'ai-test'
+        type: string
+      board_name:
+        description: 'Name of the board (optional, defaults to "kanban-board")'
+        required: false
+        default: 'kanban-board'
+        type: string
+
+jobs:
+  summarize-kanban:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+      contents: read
+      discussions: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r KanbanSummaryBot/requirements.txt
+      
+      - name: Run Kanban Summary Bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+          BOARD_NAME: ${{ inputs.board_name }}
+        run: |
+          python KanbanSummaryBot/kanban_summary_bot.py
