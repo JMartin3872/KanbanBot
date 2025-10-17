@@ -56,7 +56,7 @@ def get_organization_projects(org_name: str, project_name: str) -> Optional[Dict
     query = """
     query($org: String!, $projectName: String!) {
       organization(login: $org) {
-        projectsV2(first: 20, query: $projectName) {
+        projectsV2(first: 100, query: $projectName) {
           nodes {
             id
             title
@@ -72,19 +72,23 @@ def get_organization_projects(org_name: str, project_name: str) -> Optional[Dict
         'projectName': project_name
     }
     
-    data = execute_graphql_query(query, variables)
-    
-    if not data.get('organization'):
+    try:
+        data = execute_graphql_query(query, variables)
+        
+        if not data.get('organization'):
+            return None
+        
+        projects = data['organization']['projectsV2']['nodes']
+        
+        # Find exact match (case-insensitive)
+        for project in projects:
+            if project['title'].lower() == project_name.lower():
+                return project
+        
         return None
-    
-    projects = data['organization']['projectsV2']['nodes']
-    
-    # Find exact match (case-insensitive)
-    for project in projects:
-        if project['title'].lower() == project_name.lower():
-            return project
-    
-    return None
+    except Exception:
+        # Organization not found or other error, return None to try repository lookup
+        return None
 
 
 def get_repository_projects(owner: str, repo: str, project_name: str) -> Optional[Dict[str, Any]]:
